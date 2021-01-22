@@ -2,6 +2,7 @@ const express = require('express')
 const dotenv = require('dotenv')
 const morgan = require('morgan') // dev logging
 const colors = require('colors')
+const fileupload = require('express-fileupload')
 const errorHandler = require('./middleware/error')
 const connectDB = require('./config/db')
 
@@ -12,6 +13,7 @@ connectDB()
 
 // Route files
 const bootcampsRouter = require('./routes/bootcamps')
+const coursesRouter = require('./routes/courses')
 
 const app = express()
 
@@ -23,7 +25,11 @@ if (process.env.NODE_ENV === 'development') {
 	app.use(morgan('dev'))
 }
 
+// File uploading
+app.use(fileupload())
+
 app.use('/api/v1/bootcamps', bootcampsRouter)
+app.use('/api/v1/courses', coursesRouter)
 
 app.use(errorHandler)
 
@@ -40,6 +46,7 @@ const server = app.listen(
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
 	console.log(`Error: ${err.message}`.red)
+
 	// Close the server and exit process
 	server.close(() => process.exit(1))
 })

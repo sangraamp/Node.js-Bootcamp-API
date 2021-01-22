@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const slugify = require('slugify')
 const validator = require('validator')
 const geocoder = require('../utils/geocoder')
+const Course = require('./Course')
 
 const BootcampSchema = new mongoose.Schema(
 	{
@@ -105,6 +106,9 @@ const BootcampSchema = new mongoose.Schema(
 		},
 	},
 	{
+		// If you use toJSON() or toObject() mongoose will not include virtuals by default. This includes the output of calling JSON.stringify() on a Mongoose document, because JSON.stringify() calls toJSON(). Pass { virtuals: true } to either toObject() or toJSON().
+		toJSON: { virtuals: true },
+		toObject: { virtuals: true },
 		timestamps: true,
 	}
 )
@@ -132,6 +136,23 @@ BootcampSchema.pre('save', async function (next) {
 	// Do not store address in DB as we are storing it in formattedAddress
 	this.address = undefined
 	next()
+})
+
+// Cascade delete courses when a bootcamp is deleted
+BootcampSchema.pre('remove', async function (next) {
+	console.log(`Courses being removed from bootcamp ${this._id}`)
+
+	await Course.deleteMany({ bootcamp: this._id })
+	next()
+})
+
+// Reverse populate with virtuals
+// An array of courses for a bootcamp
+BootcampSchema.virtual('courses', {
+	ref: 'Course',
+	localField: '_id',
+	foreignField: 'bootcamp',
+	justOne: false,
 })
 
 module.exports = mongoose.model('Bootcamp', BootcampSchema)
