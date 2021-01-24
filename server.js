@@ -5,6 +5,7 @@ const colors = require('colors')
 const fileupload = require('express-fileupload')
 const errorHandler = require('./middleware/error')
 const connectDB = require('./config/db')
+const path = require('path')
 
 // Load env vars
 dotenv.config({ path: './config/config.env' })
@@ -27,6 +28,9 @@ if (process.env.NODE_ENV === 'development') {
 
 // File uploading
 app.use(fileupload())
+
+// Set static folder
+app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/api/v1/bootcamps', bootcampsRouter)
 app.use('/api/v1/courses', coursesRouter)
